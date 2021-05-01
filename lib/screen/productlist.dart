@@ -1,3 +1,5 @@
+import 'package:creamee/provider/cartprovider.dart';
+import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/utils/custom_stepper.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,11 @@ import 'package:creamee/screen/productdetail.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:creamee/model/imagecustom.dart';
+import 'package:creamee/screen/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:creamee/network_utils/api.dart';
+import 'package:creamee/model/user.dart';
+import 'package:provider/provider.dart';
 
 class Product {
   int id;
@@ -45,6 +52,7 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   List<Product> products = [];
+  CartProvider cartProvider;
   @override
   void initState() {
     super.initState();
@@ -57,12 +65,11 @@ class _ProductListState extends State<ProductList> {
     var url =
         "http://192.168.0.187:8000/api/category-list/$venid/$catid/productlist";
     var response = await http.get(url);
-    // print(response.body);
+    print(response.body);
     if (response.statusCode == 200) {
       List<dynamic> items = json.decode(response.body)['productlist'];
       setState(() {
         products = items.map((product) => Product.fromJson(product)).toList();
-
         // isLoading = false;
       });
     } else {
@@ -74,6 +81,7 @@ class _ProductListState extends State<ProductList> {
   }
 
   Widget build(BuildContext context) {
+    cartProvider = Provider.of<CartProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -162,7 +170,9 @@ class _ProductListState extends State<ProductList> {
                             alignment: Alignment.bottomRight,
                             child: RaisedButton(
                               color: Colors.red,
-                              onPressed: () {},
+                              onPressed: () {
+                                cartProvider.addtocart();
+                              },
                               child: const Text('Add To Cart',
                                   style: TextStyle(
                                     color: Colors.white,

@@ -1,8 +1,9 @@
+import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/screen/app.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/provider/cartprovider.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,6 +16,11 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<UserProvider>(create: (_) => UserProvider()),
+        ChangeNotifierProxyProvider<UserProvider, CartProvider>(
+          update: (context, userProvider, cartProvider) =>
+              CartProvider(userProvider),
+          create: (BuildContext context) => CartProvider(null),
+        )
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

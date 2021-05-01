@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:creamee/screen/account.dart';
 
 class EditAccount extends StatefulWidget {
-  EditAccount({Key key}) : super(key: key);
+  final User myaccount;
+  const EditAccount({Key key, this.myaccount}) : super(key: key);
+
   @override
   _EditAccountState createState() => _EditAccountState();
 }
@@ -23,7 +26,10 @@ class _EditAccountState extends State<EditAccount> {
   @override
   void initState() {
     super.initState();
-    _name.text = "Dev Stack";
+    _name.text = widget.myaccount.name;
+    _email.text = widget.myaccount.email;
+    _contactno.text = widget.myaccount.contactno;
+    _address.text = widget.myaccount.address;
   }
 
   @override
@@ -246,8 +252,7 @@ class _EditAccountState extends State<EditAccount> {
         ),
         labelText: "Name",
         helperText: "Name can't be empty",
-        hintText: "Dev Stack",
-        filled: true,
+        // hintText: "Dev Stack",
         labelStyle: TextStyle(color: Colors.red),
       ),
     );
@@ -257,7 +262,7 @@ class _EditAccountState extends State<EditAccount> {
     return TextFormField(
       controller: _email,
       validator: (value) {
-        if (value.isEmpty) return "Profession can't be empty";
+        if (value.isEmpty) return "Email can't be empty";
         return null;
       },
       decoration: InputDecoration(
@@ -271,12 +276,13 @@ class _EditAccountState extends State<EditAccount> {
           width: 2,
         )),
         prefixIcon: Icon(
-          Icons.person,
+          Icons.email,
           color: Colors.red[200],
         ),
-        labelText: "Profession",
-        helperText: "Profession can't be empty",
-        hintText: "Full Stack Developer",
+        labelText: "Email",
+        helperText: "Email can't be empty",
+        // hintText: "example@gmail.com",
+        labelStyle: TextStyle(color: Colors.red),
       ),
     );
   }
@@ -285,7 +291,7 @@ class _EditAccountState extends State<EditAccount> {
     return TextFormField(
       controller: _contactno,
       validator: (value) {
-        if (value.isEmpty) return "DOB can't be empty";
+        if (value.isEmpty) return "Contact No can't be empty";
 
         return null;
       },
@@ -300,12 +306,13 @@ class _EditAccountState extends State<EditAccount> {
           width: 2,
         )),
         prefixIcon: Icon(
-          Icons.person,
+          Icons.phone,
           color: Colors.red[200],
         ),
-        labelText: "Date Of Birth",
-        helperText: "Provide DOB on dd/mm/yyyy",
-        hintText: "01/01/2020",
+        labelText: "Contact No",
+        helperText: "Contact No can't be empty",
+        // hintText: "0238382743",
+        labelStyle: TextStyle(color: Colors.red),
       ),
     );
   }
@@ -314,10 +321,11 @@ class _EditAccountState extends State<EditAccount> {
     return TextFormField(
       controller: _address,
       validator: (value) {
-        if (value.isEmpty) return "Title can't be empty";
+        if (value.isEmpty) return "Address can't be empty";
 
         return null;
       },
+      maxLines: 2,
       decoration: InputDecoration(
         border: OutlineInputBorder(
             borderSide: BorderSide(
@@ -329,12 +337,13 @@ class _EditAccountState extends State<EditAccount> {
           width: 2,
         )),
         prefixIcon: Icon(
-          Icons.person,
+          Icons.home_work_rounded,
           color: Colors.red[200],
         ),
-        labelText: "Title",
-        helperText: "It can't be empty",
-        hintText: "Flutter Developer",
+        labelText: "Address",
+        helperText: "Address can't be empty",
+        hintText: "No.123 jalan abc",
+        labelStyle: TextStyle(color: Colors.red),
       ),
     );
   }
@@ -342,11 +351,11 @@ class _EditAccountState extends State<EditAccount> {
   Widget passwordTextField() {
     return TextFormField(
       controller: _password,
-      validator: (value) {
-        if (value.isEmpty) return "About can't be empty";
+      // validator: (value) {
+      //   if (value.isEmpty) return "Password can't be empty";
 
-        return null;
-      },
+      //   return null;
+      // },
       decoration: InputDecoration(
         border: OutlineInputBorder(
             borderSide: BorderSide(
@@ -357,10 +366,16 @@ class _EditAccountState extends State<EditAccount> {
           color: Colors.grey,
           width: 2,
         )),
-        labelText: "About",
-        helperText: "Write about yourself",
-        hintText: "I am Dev Stack",
+        prefixIcon: Icon(
+          Icons.vpn_key,
+          color: Colors.red[200],
+        ),
+        labelText: "Password",
+        helperText: "Enter new password",
+        // hintText: "I am Dev Stack",
+        labelStyle: TextStyle(color: Colors.red),
       ),
+      obscureText: true,
     );
   }
 }

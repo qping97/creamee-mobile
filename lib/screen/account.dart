@@ -94,13 +94,21 @@ class _AccountState extends State<Account> {
         title: Text("Account"),
         backgroundColor: Colors.red[200],
         actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(context,
-                  new MaterialPageRoute(builder: (context) => EditAccount()));
-            },
-            color: Colors.black,
+          Padding(
+            padding: const EdgeInsets.only(top: 8, right: 15, bottom: 8),
+            child: Container(
+              width: 80,
+              height: 8,
+              child: RaisedButton(
+                textColor: Colors.red,
+                onPressed: () {},
+                child: Text("Logout"),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                    side: BorderSide(color: Colors.transparent)),
+                color: Colors.white,
+              ),
+            ),
           ),
         ],
       ),
@@ -129,7 +137,13 @@ class _AccountState extends State<Account> {
                       right: 20,
                     ),
                     child: RaisedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            new MaterialPageRoute(
+                                builder: (context) =>
+                                    EditAccount(myaccount: accounts)));
+                      },
                       child: const Text('Edit', style: TextStyle(fontSize: 16)),
                       color: Colors.red[200],
                       textColor: Colors.white,

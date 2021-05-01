@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:creamee/screen/categorylist.dart';
+import 'package:creamee/screen/productlist.dart';
 import 'package:creamee/screen/login.dart';
 import 'package:creamee/screen/cart.dart';
 // import 'package:creamee/network_utils/api.dart';
@@ -13,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:creamee/model/imagecustom.dart';
 import 'package:provider/provider.dart';
 import 'package:creamee/provider/userprovider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:creamee/screen/alert_logindialog.dart';
 
 class Vendor {
@@ -56,6 +58,27 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  // void checkUser() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   var sharedUserResponseinString = prefs.getString('refresh_token');
+  //   print(sharedUserResponseinString);
+  //   if (sharedUserResponseinString == null) {
+  //     print("No route");
+  //   } else {
+  //     bool success =
+  //     if (success) {
+  //       Provider.of<UserProvider>(context, listen: false).timeStart(context);
+  //       // Navigator.push(
+  //       //     context,
+  //       //     MaterialPageRoute(
+  //       //         settings: RouteSettings(name: DeskScreen.routeName),
+  //       //         builder: (context) {
+  //       //           return DeskScreen();
+  //       //         }));
+  //     }
+  //   }
+  // }
+
   // Completer<GoogleMapController> _controller = Completer();
   List<Vendor> vendors = [];
   bool isLoading = false;
@@ -64,6 +87,7 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     this.fetchVendor();
+    // checkUser();
   }
 
   fetchVendor() async {
@@ -176,8 +200,9 @@ class _HomeState extends State<Home> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                    CategoryList(vendor: vendors[index])),
+                              builder: (context) =>
+                                  CategoryList(vendor: vendors[index]),
+                            ),
                           );
                           // print("dfdshfds");
                         },
