@@ -9,7 +9,7 @@ class User {
   double longitude;
   double latitude;
   ImageCustom profilepic;
-  bool isblock;
+  // bool isblock;
 
   User({
     this.id,
@@ -20,7 +20,7 @@ class User {
     this.longitude,
     this.latitude,
     this.profilepic,
-    this.isblock,
+    // this.isblock,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -34,6 +34,15 @@ class User {
     profilepic = json['profile_pic'] != null
         ? new ImageCustom.fromJson(json['profile_pic'])
         : null;
-    isblock = json['isblock'] == "0" ? false : true;
+    // isblock = json['isblock'] == "0" ? false : true;
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'contact_no': contactno,
+        'address': address,
+        'email': email,
+        'profile_pic': profilepic,
+      };
 }

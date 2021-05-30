@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'dart:js';
-
 import 'package:creamee/network_utils/api.dart';
 import 'package:flutter/material.dart';
 import 'package:creamee/model/user.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider extends ChangeNotifier {
   User user;
+  Position currentposition;
 
   userloggedin(User user) {
     this.user = user;

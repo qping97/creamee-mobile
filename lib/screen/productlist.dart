@@ -1,5 +1,6 @@
 import 'package:creamee/provider/cartprovider.dart';
 import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/provider/vendorprovider.dart';
 import 'package:creamee/utils/custom_stepper.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creamee/network_utils/api.dart';
 import 'package:creamee/model/user.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class Product {
   int id;
@@ -51,12 +54,16 @@ class ProductList extends StatefulWidget {
 }
 
 class _ProductListState extends State<ProductList> {
+  VendorProvider vendorProvider;
   List<Product> products = [];
   CartProvider cartProvider;
   @override
   void initState() {
     super.initState();
-    this.fetchProduct();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      vendorProvider = Provider.of<VendorProvider>(context, listen: false);
+      this.fetchProduct();
+    });
   }
 
   fetchProduct() async {
@@ -65,7 +72,9 @@ class _ProductListState extends State<ProductList> {
     var url =
         "http://192.168.0.187:8000/api/category-list/$venid/$catid/productlist";
     var response = await http.get(url);
-    print(response.body);
+    // print(venid);
+    // print(catid);
+    // print(response.body);
     if (response.statusCode == 200) {
       List<dynamic> items = json.decode(response.body)['productlist'];
       setState(() {
@@ -80,12 +89,73 @@ class _ProductListState extends State<ProductList> {
     }
   }
 
+  addtoCart(productId) async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var customer = json.decode(localStorage.getString('customer'));
+    int customerId = customer['id'];
+    print(customerId);
+    print(productId);
+
+    var url = "http://192.168.0.187:8000/api/addtocart";
+    var response = await http.post(url,
+        body: {'customer_id': '$customerId', 'product_id': '$productId'});
+    // print(response.body);
+    if (response.statusCode == 200) {
+      // print(response.body);
+      await fetchProduct();
+    } else {
+      setState(() {
+        confirmationPopup(context);
+      });
+    }
+  }
+
+  confirmationPopup(BuildContext dialogContext) {
+    var alertStyle = AlertStyle(
+      animationType: AnimationType.grow,
+      overlayColor: Colors.black87,
+      isCloseButton: true,
+      isOverlayTapDismiss: true,
+      titleStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      descStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+      animationDuration: Duration(milliseconds: 400),
+    );
+
+    Alert(
+        context: dialogContext,
+        style: alertStyle,
+        title:
+            "Are you sure you want to select this product? It will delete your previous cart.",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            color: Colors.grey,
+          ),
+          DialogButton(
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            color: Colors.grey,
+          )
+        ]).show();
+  }
+
   Widget build(BuildContext context) {
     cartProvider = Provider.of<CartProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Store Name"),
+        title: Text(vendorProvider?.vendor?.vname ?? ""),
         backgroundColor: Colors.red[200],
       ),
       body: Column(
@@ -136,7 +206,7 @@ class _ProductListState extends State<ProductList> {
                                     Text(
                                       products[index].name,
                                       style: TextStyle(
-                                        fontSize: 18.0,
+                                        fontSize: 15.0,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -145,6 +215,20 @@ class _ProductListState extends State<ProductList> {
                                 ),
                                 Text('RM ' +
                                     products[index].productprice.toString()),
+                                Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: RaisedButton(
+                                      color: Colors.red,
+                                      onPressed: () {
+                                        // cartProvider.addtocart();
+                                        addtoCart(products[index].id);
+                                      },
+                                      child: const Text('Add To Cart',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          )),
+                                      elevation: 5,
+                                    )),
                               ],
                             ),
                           ),
@@ -166,19 +250,6 @@ class _ProductListState extends State<ProductList> {
                               // ),
                               ),
                         ),
-                        Align(
-                            alignment: Alignment.bottomRight,
-                            child: RaisedButton(
-                              color: Colors.red,
-                              onPressed: () {
-                                cartProvider.addtocart();
-                              },
-                              child: const Text('Add To Cart',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                              elevation: 5,
-                            )),
                       ],
                     ),
                   );

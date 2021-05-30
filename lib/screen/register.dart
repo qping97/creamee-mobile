@@ -27,6 +27,42 @@ class _RegisterState extends State<Register> {
   var address;
   var contactno;
   var profilepic;
+
+  void _register() async {
+    setState(() {
+      _isLoading = true;
+    });
+    var data = {
+      'email': email,
+      'password': password,
+      'contact_no': contactno,
+      'name': name,
+      'address': address,
+      'profile_pic': profilepic,
+    };
+
+    var res = await Network().authData(data, '/api/register/customer');
+    var body = json.decode(res.body);
+    print(res.body);
+    if (body['success']) {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      localStorage.setString('token', json.encode(body['token']));
+      localStorage.setString('user', json.encode(body));
+      // localStorage.setString('user', json.encode(body['user']));
+
+      Navigator.push(
+        context,
+        new MaterialPageRoute(builder: (context) => Login()),
+      );
+    } else {
+      print('false');
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -317,38 +353,6 @@ class _RegisterState extends State<Register> {
     );
     setState(() {
       _imageFile = pickedFile;
-    });
-  }
-
-  void _register() async {
-    setState(() {
-      _isLoading = true;
-    });
-    var data = {
-      'email': email,
-      'password': password,
-      'contact_no': contactno,
-      'name': name,
-      'address': address,
-      'profile_pic': profilepic,
-    };
-
-    var res = await Network().authData(data, '/register/customer');
-    var body = json.decode(res.body);
-    if (body['success']) {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      localStorage.setString('token', json.encode(body['token']));
-      localStorage.setString('user', json.encode(body));
-      // localStorage.setString('user', json.encode(body['user']));
-
-      Navigator.push(
-        context,
-        new MaterialPageRoute(builder: (context) => Login()),
-      );
-    }
-
-    setState(() {
-      _isLoading = false;
     });
   }
 }

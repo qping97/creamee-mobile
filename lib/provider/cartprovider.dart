@@ -15,8 +15,7 @@ class CartProvider extends ChangeNotifier {
     User user = userProvider.user;
     // SharedPreferences prefs = await _prefs;
     // var customer = json.decode(prefs.getString('customer'));
-    print(user.id);
-    var url = "http://192.168.0.187:8000/api/addtocart/${user.id}";
+    var url = "http://192.168.0.187:8000/api/addtocart";
     // var res = await Network().authData(data, '/addtocart');
     var response = await http.get(url);
     // final Map parsed = json.decode(response.body);

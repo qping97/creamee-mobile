@@ -1,7 +1,13 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:creamee/screen/account.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as paths;
 
 class EditAccount extends StatefulWidget {
   final User myaccount;
@@ -22,6 +28,7 @@ class _EditAccountState extends State<EditAccount> {
   TextEditingController _contactno = TextEditingController();
   TextEditingController _address = TextEditingController();
   TextEditingController _password = TextEditingController();
+  User myaccounts = User();
 
   @override
   void initState() {
@@ -30,6 +37,47 @@ class _EditAccountState extends State<EditAccount> {
     _email.text = widget.myaccount.email;
     _contactno.text = widget.myaccount.contactno;
     _address.text = widget.myaccount.address;
+  }
+
+  saveProfile() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var customer = json.decode(localStorage.getString('customer'));
+    int customerId = customer['id'];
+
+    // var imageFile = await MultipartFile.fromFile(_imageFile.path, //1
+    //     filename: "${paths.basename(_imageFile.path)}");
+    myaccounts.id = customerId;
+    Map<String, dynamic> map = myaccounts.toJson();
+    // map["profile_pic"] = imageFile;
+    FormData formData = new FormData.fromMap(map);
+    var url = "http://192.168.0.187:8000/api/customer/profile/$customerId/edit";
+    var response = await http.post(url);
+    print(customerId);
+    print(response.body);
+    print(map);
+    try {
+      Dio dio = new Dio();
+      // dio.options.headers["Accept"] = "application/json";
+      // dio.options.headers["Content-Type"] = "application/json";
+
+// TODO: BACKEND
+      // Response response = await dio.post(url, data: formData);
+
+      // if (response.statusCode == 200 || response.statusCode == 201) {
+      //   print("Letter's draft saved!");
+      // } else {
+      //   print("Letter's draft 404");
+      // }
+    } catch (e) {
+      print("Letter's draft failed");
+      print(e.toString());
+    }
+
+    // if (response.statusCode == 200) {
+    //   setState(() {});
+    // } else {
+    //   setState(() {});
+    // }
   }
 
   @override
@@ -114,24 +162,29 @@ class _EditAccountState extends State<EditAccount> {
               //   }
               // },
               child: Center(
-                child: Container(
-                  width: 200,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.red[200],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: circular
-                        ? CircularProgressIndicator()
-                        : Text(
-                            "Save",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                child: InkWell(
+                  onTap: () {
+                    saveProfile();
+                  },
+                  child: Container(
+                    width: 200,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.red[200],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: circular
+                          ? CircularProgressIndicator()
+                          : Text(
+                              "Save",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
               ),
@@ -231,6 +284,10 @@ class _EditAccountState extends State<EditAccount> {
   Widget nameTextField() {
     return TextFormField(
       controller: _name,
+      onChanged: (value) {
+        myaccounts.name = value;
+        widget.myaccount.name = myaccounts.name;
+      },
       validator: (value) {
         if (value.isEmpty) return "Name can't be empty";
 
@@ -261,6 +318,10 @@ class _EditAccountState extends State<EditAccount> {
   Widget emailTextField() {
     return TextFormField(
       controller: _email,
+      onChanged: (value) {
+        myaccounts.email = value;
+        widget.myaccount.email = myaccounts.email;
+      },
       validator: (value) {
         if (value.isEmpty) return "Email can't be empty";
         return null;
@@ -290,6 +351,10 @@ class _EditAccountState extends State<EditAccount> {
   Widget contactnoField() {
     return TextFormField(
       controller: _contactno,
+      onChanged: (value) {
+        myaccounts.contactno = value;
+        widget.myaccount.contactno = myaccounts.contactno;
+      },
       validator: (value) {
         if (value.isEmpty) return "Contact No can't be empty";
 
@@ -320,6 +385,10 @@ class _EditAccountState extends State<EditAccount> {
   Widget addressTextField() {
     return TextFormField(
       controller: _address,
+      onChanged: (value) {
+        myaccounts.address = value;
+        widget.myaccount.address = myaccounts.address;
+      },
       validator: (value) {
         if (value.isEmpty) return "Address can't be empty";
 
@@ -351,6 +420,9 @@ class _EditAccountState extends State<EditAccount> {
   Widget passwordTextField() {
     return TextFormField(
       controller: _password,
+      onChanged: (value) {
+        myaccounts.password = value;
+      },
       // validator: (value) {
       //   if (value.isEmpty) return "Password can't be empty";
 

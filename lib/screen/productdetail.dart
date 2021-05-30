@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:creamee/screen/productlist.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class ProductDetail extends StatefulWidget {
   final Product product;
@@ -11,6 +16,66 @@ class ProductDetail extends StatefulWidget {
 
 class _ProductDetailState extends State<ProductDetail> {
   @override
+  addtoCart(productId) async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var customer = json.decode(localStorage.getString('customer'));
+    int customerId = customer['id'];
+    print(customerId);
+    print(productId);
+
+    var url = "http://192.168.0.187:8000/api/addtocart";
+    var response = await http.post(url,
+        body: {'customer_id': '$customerId', 'product_id': '$productId'});
+    // print(response.body);
+    if (response.statusCode == 200) {
+      print(response.body);
+    } else {
+      setState(() {
+        confirmationPopup(context);
+      });
+    }
+  }
+
+  confirmationPopup(BuildContext dialogContext) {
+    var alertStyle = AlertStyle(
+      animationType: AnimationType.grow,
+      overlayColor: Colors.black87,
+      isCloseButton: true,
+      isOverlayTapDismiss: true,
+      titleStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      descStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+      animationDuration: Duration(milliseconds: 400),
+    );
+
+    Alert(
+        context: dialogContext,
+        style: alertStyle,
+        title:
+            "Are you sure you want to select this product? It will delete your previous cart.",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            color: Colors.grey,
+          ),
+          DialogButton(
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            color: Colors.grey,
+          )
+        ]).show();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -178,16 +243,21 @@ class _ProductDetailState extends State<ProductDetail> {
                               // children: [Text('Total'), Text("RM 245.00")],
                             ),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 25),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              'Add to Cart',
-                              style: TextStyle(color: Colors.white),
+                          InkWell(
+                            onTap: () {
+                              addtoCart(widget.product.id);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8, horizontal: 25),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Add to Cart',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           )
                         ],

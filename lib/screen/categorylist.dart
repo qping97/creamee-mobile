@@ -1,3 +1,4 @@
+import 'package:creamee/provider/vendorprovider.dart';
 import 'package:flutter/material.dart';
 import 'package:creamee/screen/home.dart';
 import 'package:creamee/screen/productlist.dart';
@@ -6,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:creamee/model/imagecustom.dart';
 import 'package:creamee/screen/app.dart';
+import 'package:provider/provider.dart';
 
 class Category {
   int id;
@@ -28,10 +30,7 @@ class Category {
 }
 
 class CategoryList extends StatefulWidget {
-  final Vendor vendor;
   // final String passedData2;
-
-  const CategoryList({Key key, this.vendor}) : super(key: key);
 
   @override
   _CategoryListState createState() => _CategoryListState();
@@ -39,15 +38,19 @@ class CategoryList extends StatefulWidget {
 
 class _CategoryListState extends State<CategoryList> {
   List<Category> categories = [];
+  VendorProvider vendorProvider;
 
   @override
   void initState() {
     super.initState();
-    this.fetchCategory();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      vendorProvider = Provider.of<VendorProvider>(context, listen: false);
+      this.fetchCategory();
+    });
   }
 
   fetchCategory() async {
-    var id = widget.vendor.id;
+    var id = vendorProvider.vendor.id;
     var url = "http://192.168.0.187:8000/api/category-list/$id";
     // print(url);
     var response = await http.get(url);
@@ -72,7 +75,7 @@ class _CategoryListState extends State<CategoryList> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(widget.vendor.vname),
+        title: Text(vendorProvider?.vendor?.vname ?? ""),
         backgroundColor: Colors.red[200],
       ),
       body: Column(

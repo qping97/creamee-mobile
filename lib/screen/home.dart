@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:creamee/provider/vendorprovider.dart';
+import 'package:creamee/screen/customorder.dart';
 import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:creamee/screen/categorylist.dart';
@@ -11,45 +13,12 @@ import 'package:creamee/screen/cart.dart';
 // import 'package:google_maps_place_picker/google_maps_place_picker.dart';
 import 'package:material_floating_search_bar/material_floating_search_bar.dart';
 import 'package:http/http.dart' as http;
-import 'package:creamee/model/imagecustom.dart';
 import 'package:provider/provider.dart';
 import 'package:creamee/provider/userprovider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:creamee/screen/alert_logindialog.dart';
-
-class Vendor {
-  int id;
-  String vname;
-  String contactno;
-  String address;
-  String email;
-  double longitude;
-  double latitude;
-  ImageCustom image;
-
-  Vendor({
-    this.id,
-    this.vname,
-    this.contactno,
-    this.address,
-    this.email,
-    this.longitude,
-    this.latitude,
-    this.image,
-  });
-
-  Vendor.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    vname = json['vendor_name'];
-    contactno = json['contact_no'];
-    address = json['vendor_address'];
-    email = json['email'];
-    longitude = double.parse(json['longitude']);
-    latitude = double.parse(json['latitude']);
-    image =
-        json['image'] != null ? new ImageCustom.fromJson(json['image']) : null;
-  }
-}
+import 'package:creamee/model/vendor.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Home extends StatefulWidget {
   // static  kInitialPosition = LatLng(0, 0);
@@ -81,13 +50,25 @@ class _HomeState extends State<Home> {
 
   // Completer<GoogleMapController> _controller = Completer();
   List<Vendor> vendors = [];
+  VendorProvider vendorProvider;
+  UserProvider userProvider;
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     this.fetchVendor();
-    // checkUser();
+    this.getLocation();
+  }
+
+  void getLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print(position);
+    userProvider.currentposition = position;
+    // var lat = position.latitude;
+    // var long = position.longitude;
+    // print(lat);
   }
 
   fetchVendor() async {
@@ -109,10 +90,10 @@ class _HomeState extends State<Home> {
     }
   }
 
-  // double zoomVal = 5.0;
-
   @override
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
+    vendorProvider = Provider.of<VendorProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -142,12 +123,144 @@ class _HomeState extends State<Home> {
       ),
       body: Stack(
         children: <Widget>[
-          searchBar(),
+          // searchBar(),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: vendors.length,
+            itemBuilder: (context, index) {
+              return Card(
+                elevation: 2.0,
+                margin:
+                    new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                child: Container(
+                  decoration: BoxDecoration(color: Colors.white),
+                  child: makeListTitle(context, index),
+                ),
+              );
+            },
+          ),
           // _googlemap(context),
         ],
       ),
     );
   }
+
+  ListTile makeListTitle(BuildContext context, int index) => ListTile(
+        onTap: () {
+          vendorProvider.vendorSelected(vendors[index]);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CategoryList(),
+            ),
+          );
+        },
+        contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 50.0),
+        leading: Container(
+          width: 60,
+          height: 250,
+          // color: Colors.green,
+          alignment: Alignment.center,
+          child: Image.network(
+            vendors[index].image.url,
+            // widget.cartitem.product.productimage.url,
+            height: 150,
+          ),
+        ),
+        title: Row(children: <Widget>[
+          Padding(
+            padding: EdgeInsets.fromLTRB(5, 0, 5, 5),
+            child: Text(
+              vendors[index].vname,
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
+                child: Text(
+                  // (userProvider.currentposition.latitude -
+                  //         vendors[index].latitude)
+                  //     .toString(),
+                  '900 m',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    // shadows: [
+                    //   Shadow(
+                    //       color: Colors.white10.withOpacity(0.6),
+                    //       offset: Offset(8, 8),
+                    //       blurRadius: 15),
+                    // ],
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+            ],
+          ),
+        ]),
+        subtitle: Row(
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.all(5),
+              child: Wrap(
+                direction: Axis.vertical,
+                children: [
+                  Row(
+                    children: <Widget>[
+                      Icon(Icons.phone, color: Colors.grey[350]),
+                      Text(
+                        vendors[index].contactno,
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.email, color: Colors.grey[350]),
+                        Text(
+                          vendors[index].email,
+                          style: TextStyle(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.place, color: Colors.grey[350]),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.5,
+                          child: Text(
+                            vendors[index].address,
+                            // maxLines: 5,
+                            // overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
 
   Widget searchBar() {
     return FloatingSearchBar(
@@ -197,11 +310,11 @@ class _HomeState extends State<Home> {
                       return InkWell(
                         splashColor: Colors.yellow,
                         onTap: () {
+                          vendorProvider.vendorSelected(vendors[index]);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  CategoryList(vendor: vendors[index]),
+                              builder: (context) => CategoryList(),
                             ),
                           );
                           // print("dfdshfds");
@@ -220,73 +333,4 @@ class _HomeState extends State<Home> {
       },
     );
   }
-
-  // Widget _googlemap(BuildContext content) {
-  //   return Container(
-  //     height: MediaQuery.of(context).size.height,
-  //     width: MediaQuery.of(context).size.width,
-  //     child: PlacePicker(
-  //       usePlaceDetailSearch: true,
-  //       apiKey: "AIzaSyAEZ1klRMBQxeGIeZuOkwzEbhbE3RpGXgM",
-  //       onPlacePicked: (result) {
-  //         // selectedPlace = result;
-  //         print(result.formattedAddress);
-  //         print(result.name);
-  //         //lat come first then long (lat, long)
-  //         print("lat: ${result.geometry.location.lat}");
-  //         print("long: ${result.geometry.location.lng}");
-  //         // setState(() {
-  //         //   selectedPlaceName = result.name;
-  //         //   selectedLat = result.geometry.location.lat;
-  //         //   selectedLong = result.geometry.location.lng;
-  //         // });
-  //         // _getLongandLat();
-  //         Navigator.of(context).pop();
-  //         // _accessMethodName.add(
-  //         //     deliverAccessMethod[index]
-  //         //         .deliverAccessMethodName);
-  //         // _accessMethodIndex.add(
-  //         //     deliverAccessMethod[index]
-  //         //         .deliverAccessMethodNameIndex);
-  //         // print(_accessMethodName);
-  //       },
-  //       initialPosition: Home.kInitialPosition,
-  //       useCurrentLocation: true,
-  //     ),
-  //     // child: GoogleMap(
-  //     //   mapType: MapType.normal,
-  //     //   initialCameraPosition:
-  //     //       CameraPosition(target: LatLng(1.5535, 110.3593), zoom: 12),
-  //     //   onMapCreated: (GoogleMapController controller) {
-  //     //     _controller.complete(controller);
-  //     //   },
-  //     //   markers: {takaMarker, mitaMarker},
-  //     // ),
-  //   );
 }
-
-// _getLongandLat() async {
-//     List<Placemark> placemark =
-//         await Geolocator().placemarkFromAddress(selectedPlace.formattedAddress);
-//     Placemark newplace = placemark[0];
-//     print(newplace.position.latitude);
-//     print(newplace.position.longitude);
-//   }
-//   Marker takaMarker = Marker(
-//     markerId: MarkerId('taka'),
-//     position: LatLng(1.5263113, 110.3743929),
-//     infoWindow: InfoWindow(title: 'TAKA Cake House'),
-//     icon: BitmapDescriptor.defaultMarkerWithHue(
-//       BitmapDescriptor.hueViolet,
-//     ),
-//   );
-
-//   Marker mitaMarker = Marker(
-//     markerId: MarkerId('mita'),
-//     position: LatLng(1.5263381, 110.3678),
-//     infoWindow: InfoWindow(title: 'Mita Cake House'),
-//     icon: BitmapDescriptor.defaultMarkerWithHue(
-//       BitmapDescriptor.hueViolet,
-//     ),
-//   );
-// }

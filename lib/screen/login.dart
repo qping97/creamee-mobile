@@ -183,10 +183,17 @@ class _LoginState extends State<Login> {
     var res = await Network().authData(data, '/api/login/customer');
     print(res.body);
     var body = json.decode(res.body);
+
     if (body['success']) {
       SharedPreferences localStorage = await SharedPreferences.getInstance();
       localStorage.setString('token', json.encode(body['token']));
       localStorage.setString('customer', json.encode(body['customer']));
+      localStorage.setString('id', json.encode(body['id']));
+
+      var val = localStorage.getString('customer');
+      print(
+          '----------------------------------------------------------------------');
+      print(val);
 
       User user = User.fromJson(body['customer']);
       Provider.of<UserProvider>(context, listen: false).userloggedin(user);

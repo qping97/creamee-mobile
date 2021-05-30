@@ -28,6 +28,8 @@ class _AppState extends State<App> {
 
   void _itemTapped(int selectedIndex) {
     _pageController.jumpToPage(selectedIndex);
+
+    if (selectedIndex == 2 || selectedIndex == 1) {}
   }
 
   @override

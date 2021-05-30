@@ -1,4 +1,5 @@
 import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/provider/vendorprovider.dart';
 import 'package:creamee/screen/app.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,8 @@ class MyApp extends StatelessWidget {
           update: (context, userProvider, cartProvider) =>
               CartProvider(userProvider),
           create: (BuildContext context) => CartProvider(null),
-        )
+        ),
+        ChangeNotifierProvider<VendorProvider>(create: (_) => VendorProvider())
       ],
       child: MaterialApp(
         title: 'Flutter Demo',

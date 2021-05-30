@@ -6,6 +6,7 @@ import 'package:creamee/screen/editaccount.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:creamee/model/imagecustom.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class User {
   int id;
@@ -16,7 +17,8 @@ class User {
   double longitude;
   double latitude;
   ImageCustom profilepic;
-  bool isblock;
+  String password;
+  // bool isblock;
 
   User({
     this.id,
@@ -27,7 +29,8 @@ class User {
     this.longitude,
     this.latitude,
     this.profilepic,
-    this.isblock,
+    this.password,
+    // this.isblock,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -41,8 +44,20 @@ class User {
     profilepic = json['profile_pic'] != null
         ? new ImageCustom.fromJson(json['profile_pic'])
         : null;
-    isblock = json['isblock'] == "0" ? false : true;
+    // isblock = json['isblock'] == "0" ? false : true;
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'contact_no': contactno,
+        'address': address,
+        'email': email,
+        'longitude': longitude,
+        'latitude': latitude,
+        'profile_pic': profilepic,
+        'password': password,
+      };
 }
 
 class Account extends StatefulWidget {
@@ -63,7 +78,10 @@ class _AccountState extends State<Account> {
 
   fetchData() async {
     // print(url);
-    var url = "http://192.168.0.187:8000/api/customer/profile/1";
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var customer = json.decode(localStorage.getString('customer'));
+    int customerId = customer['id'];
+    var url = "http://192.168.0.187:8000/api/customer/profile/$customerId";
     var response = await http.get(url);
     print(response.body);
     if (response.statusCode == 200) {
