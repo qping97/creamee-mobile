@@ -44,11 +44,11 @@ class _EditAccountState extends State<EditAccount> {
     var customer = json.decode(localStorage.getString('customer'));
     int customerId = customer['id'];
 
-    // var imageFile = await MultipartFile.fromFile(_imageFile.path, //1
-    //     filename: "${paths.basename(_imageFile.path)}");
+    var imageFile = await MultipartFile.fromFile(_imageFile.path,
+        filename: "${paths.basename(_imageFile.path)}");
     myaccounts.id = customerId;
     Map<String, dynamic> map = myaccounts.toJson();
-    // map["profile_pic"] = imageFile;
+    map["profile_pic"] = imageFile;
     FormData formData = new FormData.fromMap(map);
     var url = "http://192.168.0.187:8000/api/customer/profile/$customerId/edit";
     var response = await http.post(url);
@@ -57,17 +57,17 @@ class _EditAccountState extends State<EditAccount> {
     print(map);
     try {
       Dio dio = new Dio();
-      // dio.options.headers["Accept"] = "application/json";
-      // dio.options.headers["Content-Type"] = "application/json";
+      dio.options.headers["Accept"] = "application/json";
+      dio.options.headers["Content-Type"] = "application/json";
 
 // TODO: BACKEND
-      // Response response = await dio.post(url, data: formData);
+      Response response = await dio.post(url, data: formData);
 
-      // if (response.statusCode == 200 || response.statusCode == 201) {
-      //   print("Letter's draft saved!");
-      // } else {
-      //   print("Letter's draft 404");
-      // }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Letter's draft saved!");
+      } else {
+        print("Letter's draft 404");
+      }
     } catch (e) {
       print("Letter's draft failed");
       print(e.toString());

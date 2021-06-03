@@ -180,27 +180,27 @@ class _HomeState extends State<Home> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
-                child: Text(
-                  // (userProvider.currentposition.latitude -
-                  //         vendors[index].latitude)
-                  //     .toString(),
-                  '900 m',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    // shadows: [
-                    //   Shadow(
-                    //       color: Colors.white10.withOpacity(0.6),
-                    //       offset: Offset(8, 8),
-                    //       blurRadius: 15),
-                    // ],
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
+              // Container(
+              //   padding: EdgeInsets.fromLTRB(20, 0, 10, 0),
+              //   child: Text(
+              //     // (userProvider.currentposition.latitude -
+              //     //         vendors[index].latitude)
+              //     //     .toString(),
+              //     '900 m',
+              //     style: TextStyle(
+              //       color: Colors.grey[400],
+              //       fontSize: 26,
+              //       fontWeight: FontWeight.bold,
+              //       // shadows: [
+              //       //   Shadow(
+              //       //       color: Colors.white10.withOpacity(0.6),
+              //       //       offset: Offset(8, 8),
+              //       //       blurRadius: 15),
+              //       // ],
+              //     ),
+              //     textAlign: TextAlign.left,
+              //   ),
+              // ),
             ],
           ),
         ]),

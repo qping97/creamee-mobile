@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:creamee/model/cartitem.dart';
 import 'package:flutter/material.dart';
 import 'package:creamee/utils/custom_stepper.dart';
 import 'package:creamee/screen/cart.dart';

@@ -1,8 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/provider/vendorprovider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:creamee/model/order.dart';
 
 class Checkout extends StatefulWidget {
   @override
@@ -13,9 +18,13 @@ class _CheckoutState extends State<Checkout>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
   DateTime pickedDate;
+  // DateTime pickedTime;
   TimeOfDay time;
   List<TextEditingController> _controllers = [];
   String _selected;
+  VendorProvider vendorProvider;
+  UserProvider userProvider;
+  Order order;
   List<Map> _myJson = [
     {
       'id': '1',
@@ -42,6 +51,10 @@ class _CheckoutState extends State<Checkout>
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    vendorProvider = Provider.of<VendorProvider>(context, listen: false);
+    this.fetchCartItem();
+    // });
     _tabController = TabController(length: 2, vsync: this);
     // pickedDate = new DateTime.now();
     pickedDate = new DateTime.now().add(Duration(days: 2));
@@ -54,8 +67,29 @@ class _CheckoutState extends State<Checkout>
     _tabController.dispose();
   }
 
+  fetchCartItem() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    var customer = json.decode(localStorage.getString('customer'));
+    int customerId = customer['id'];
+    print(customerId);
+
+    var url = "http://192.168.0.187:8000/api/checkout";
+    var response = await http.post(url, body: {
+      "customer_id": '$customerId',
+    });
+    if (response.statusCode == 200) {
+      order = Order.fromJson(json.decode(response.body)['payload']);
+      setState(() {});
+    } else {
+      setState(() {});
+      // isLoading = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    vendorProvider = Provider.of<VendorProvider>(context);
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -91,7 +125,7 @@ class _CheckoutState extends State<Checkout>
                 ),
               ),
               Container(
-                height: 80,
+                height: 100,
                 child: TabBarView(
                   controller: _tabController,
                   children: <Widget>[
@@ -99,6 +133,7 @@ class _CheckoutState extends State<Checkout>
                       child: ListTile(
                         leading: const Icon(Icons.home),
                         title: new TextField(
+                          maxLines: 2,
                           decoration:
                               const InputDecoration(hintText: 'Address...'),
                         ),
@@ -106,7 +141,8 @@ class _CheckoutState extends State<Checkout>
                     ),
                     Card(
                         child: new ListTile(
-                      title: Text('Vendor Address'),
+                      title: Text(vendorProvider?.vendor?.vname ?? ""),
+                      subtitle: Text(vendorProvider?.vendor?.address ?? ""),
                     ))
                   ],
                 ),
@@ -120,8 +156,9 @@ class _CheckoutState extends State<Checkout>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Text('Name:'),
-                        Text('Contact No:'),
+                        Text('Name:        ' + userProvider?.user?.name ?? ""),
+                        Text('Contact No: ' + userProvider?.user?.contactno ??
+                            ""),
                       ],
                     ),
                   ),
@@ -133,11 +170,42 @@ class _CheckoutState extends State<Checkout>
                 trailing: Icon(Icons.keyboard_arrow_down),
                 onTap: _pickedDate,
               ),
-              ListTile(
-                title: Text("Time: ${time.hour}:${time.minute}"),
-                trailing: Icon(Icons.keyboard_arrow_down),
-                onTap: _pickedTime,
+              // ListTile(
+              //   title: Text("Time: ${time.hour}:${time.minute}"),
+              //   trailing: Icon(Icons.keyboard_arrow_down),
+              //   onTap: _pickedTime,
+              // ),
+              Card(
+                child: ListTile(
+                    title: Text(
+                      'Order Note:',
+                    ),
+                    subtitle: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(height: 4),
+                            Container(
+                              color: Colors.grey[100],
+                              child: SizedBox(
+                                child: TextField(
+                                  maxLines: 3,
+                                  textAlign: TextAlign.start,
+                                  decoration: new InputDecoration.collapsed(
+                                    hintText: 'Write here...',
+                                    hintStyle: TextStyle(
+                                        fontSize: 13.0,
+                                        color: Colors.grey[600]),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                          ],
+                        ))),
               ),
+              SizedBox(height: 4),
               Card(
                 child: Column(
                   children: <Widget>[
@@ -178,7 +246,7 @@ class _CheckoutState extends State<Checkout>
                   //     Divider(
                   //       color: Colors.black,
                   //     ),
-                  itemCount: 3,
+                  itemCount: order.cart.length,
                   itemBuilder: (context, index) {
                     _controllers.add(new TextEditingController());
                     return Card(
@@ -195,14 +263,24 @@ class _CheckoutState extends State<Checkout>
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: new Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [new Text("Subtotal"), new Text("RM 100.00")],
+                  children: [
+                    new Text("Subtotal"),
+                    new Text(order != null
+                        ? "RM" + order.subtotal.toStringAsFixed(2)
+                        : '')
+                  ],
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: new Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [new Text("Delivery Fees"), new Text("RM 5.00")],
+                  children: [
+                    new Text("Delivery Fees"),
+                    new Text(order != null
+                        ? "RM" + order.deliveryfee.toStringAsFixed(2)
+                        : '')
+                  ],
                 ),
               ),
               Padding(
@@ -216,7 +294,9 @@ class _CheckoutState extends State<Checkout>
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     new Text(
-                      "RM 105.00",
+                      order != null
+                          ? "RM" + order.amount.toStringAsFixed(2)
+                          : '',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     )
@@ -299,26 +379,28 @@ class _CheckoutState extends State<Checkout>
   ListTile makeListTitle(BuildContext context, int index) => ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
         trailing: Column(children: <Widget>[
-          Text("RM 30.00"),
+          Text(order != null
+              ? 'RM ' +
+                  order.cart[index].product.productprice.toStringAsFixed(2)
+              : ''),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 2, 0),
-            child: Text("\nx2"),
+            child: Text("\nx" + order.cart[index].quantity.toString()),
           )
         ]),
         leading: Container(
           width: 50,
           height: 150,
           alignment: Alignment.center,
-
-          // child: Image.network(
-          //   "image",
-          //   height: 150,
-          // ),
+          child: Image.network(
+            order != null ? order.cart[index].product.productimage.url : '',
+            height: 150,
+          ),
         ),
         title: Padding(
           padding: EdgeInsets.all(5),
           child: Text(
-            "Cheese Cake",
+            order != null ? order.cart[index].product.name : '',
             style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           ),
         ),
@@ -328,7 +410,7 @@ class _CheckoutState extends State<Checkout>
             direction: Axis.vertical,
             children: [
               Text(
-                "Vendor name",
+                vendorProvider?.vendor?.vname ?? "",
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 13,
@@ -341,30 +423,7 @@ class _CheckoutState extends State<Checkout>
               //     color: Colors.black,
               //   ),
               // ),
-              Text(
-                'Order Note:',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 13,
-                ),
-              ),
-              SizedBox(height: 2),
-              Container(
-                color: Colors.grey[100],
-                child: SizedBox(
-                  width: 140,
-                  child: TextField(
-                    controller: _controllers[index],
-                    maxLines: 3,
-                    textAlign: TextAlign.start,
-                    decoration: new InputDecoration.collapsed(
-                      hintText: 'Write here...',
-                      hintStyle:
-                          TextStyle(fontSize: 13.0, color: Colors.grey[600]),
-                    ),
-                  ),
-                ),
-              ),
+
               // Align(alignment: Alignment.bottomRight, child: Text("total"))
             ],
           ),
@@ -385,15 +444,15 @@ class _CheckoutState extends State<Checkout>
       });
   }
 
-  _pickedTime() async {
-    TimeOfDay t = await showTimePicker(
-      context: context,
-      initialTime: time,
-    );
+  // _pickedTime() async {
+  //   TimeOfDay t = await showTimePicker(
+  //     context: context,
+  //     initialTime: time,
+  //   );
 
-    if (t != null)
-      setState(() {
-        time = t;
-      });
-  }
+  //   if (t != null)
+  //     setState(() {
+  //       time = t;
+  //     });
+  // }
 }

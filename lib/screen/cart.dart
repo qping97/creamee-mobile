@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:creamee/model/cartitem.dart';
 import 'package:creamee/screen/checkout.dart';
 import 'package:creamee/screen/productlist.dart';
 import 'package:creamee/utils/custom_stepper.dart';
@@ -11,30 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:creamee/model/payload.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-
-class CartItem {
-  int id;
-  int customerid;
-  int productid;
-  int quantity;
-  Product product;
-
-  CartItem({
-    this.id,
-    this.customerid,
-    this.productid,
-    this.quantity,
-    this.product,
-  });
-
-  CartItem.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    customerid = json['customer_id'];
-    productid = json['product_id'];
-    quantity = json['quantity'];
-    product = Product.fromJson(json['product']);
-  }
-}
 
 class Cart extends StatefulWidget {
   final CartItem quantity;
@@ -114,6 +91,10 @@ class _CartState extends State<Cart> {
     var customer = json.decode(localStorage.getString('customer'));
     int customerId = customer['id'];
     var url = "http://192.168.0.187:8000/api/update-quantity";
+    print(customerId);
+    print(productId);
+    print(quantity);
+
     var response = await http.patch(url, body: {
       "userId": '$customerId',
       "productId": '$productId',

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/provider/vendorprovider.dart';
 import 'package:creamee/screen/categorylist.dart';
 import 'package:creamee/screen/home.dart';
@@ -71,8 +72,8 @@ class CustomCakeOrder {
   String image;
   int flavorid;
   int sizeid;
-  int orderid;
   int vendorid;
+  int customerid;
 
   CustomCakeOrder({
     this.id,
@@ -82,8 +83,8 @@ class CustomCakeOrder {
     this.image,
     this.flavorid,
     this.sizeid,
-    this.orderid,
     this.vendorid,
+    this.customerid,
   });
   Map<String, dynamic> toJson() => {
         // 'id': id,
@@ -93,8 +94,8 @@ class CustomCakeOrder {
         'image': image,
         'flavor_id': flavorid,
         'size_id': sizeid,
-        'order_id': orderid,
         'vendor_id': vendorid,
+        'customer_id': customerid,
       };
 }
 
@@ -105,6 +106,7 @@ class CustomOrder extends StatefulWidget {
 
 class _CustomOrderState extends State<CustomOrder> {
   VendorProvider vendorProvider;
+  UserProvider userProvider;
   List<CustomSize> customsizes = [];
   List<CustomFlavor> customflavors = [];
   PickedFile _imageFile;
@@ -126,31 +128,32 @@ class _CustomOrderState extends State<CustomOrder> {
     customshapes.add(CustomShape(name: "Custom", image: "assets/custom.jpg"));
   }
 
-  addtocart() async {
-    var imageFile = await MultipartFile.fromFile(_imageFile.path, //1
+  submitorder() async {
+    var imageFile = await MultipartFile.fromFile(_imageFile.path,
         filename: "${paths.basename(_imageFile.path)}");
     customCakeOrder.vendorid = vendorProvider.vendor.id;
+    customCakeOrder.customerid = userProvider.user.id;
     Map<String, dynamic> map = customCakeOrder.toJson();
-    map["image"] = imageFile; //2
+    map['image'] = [imageFile];
     FormData formData = new FormData.fromMap(map);
-    print(map);
+    print(formData);
 
-    var url = "http://192.168.0.187:8000/api/addcustom";
+    var url = "http://192.168.0.187:8000/api/save-customorder";
     try {
       Dio dio = new Dio();
       // dio.options.headers["Accept"] = "application/json";
       // dio.options.headers["Content-Type"] = "application/json";
 
-// TODO: BACKEND
-      // Response response = await dio.post(url, data: formData);
+      Response response = await dio.post(url, data: formData);
 
-      // if (response.statusCode == 200 || response.statusCode == 201) {
-      //   print("Letter's draft saved!");
-      // } else {
-      //   print("Letter's draft 404");
-      // }
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("custom order created!");
+        print(response.data);
+      } else {
+        print("custom order 404");
+      }
     } catch (e) {
-      print("Letter's draft failed");
+      print("failed");
       print(e.toString());
     }
   }
@@ -189,6 +192,7 @@ class _CustomOrderState extends State<CustomOrder> {
   @override
   Widget build(BuildContext context) {
     vendorProvider = Provider.of<VendorProvider>(context);
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -258,7 +262,14 @@ class _CustomOrderState extends State<CustomOrder> {
                             shrinkWrap: true,
                             itemBuilder: (BuildContext context, int index) {
                               return RaisedButton(
+                                // color: _hasBeenPressed
+                                //     ? Colors.grey[50]
+                                //     : Colors.pink[100],
+                                elevation: 10,
                                 onPressed: () {
+                                  // setState(() {
+                                  //   _hasBeenPressed = !_hasBeenPressed;
+                                  // });
                                   customCakeOrder.shape =
                                       customshapes[index].name;
                                   print(customshapes[index].name);
@@ -482,22 +493,50 @@ class _CustomOrderState extends State<CustomOrder> {
                         SizedBox(
                           height: 10,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Align(
-                              alignment: Alignment.bottomRight,
-                              child: RaisedButton(
-                                color: Colors.red,
-                                onPressed: () {
-                                  addtocart();
-                                },
-                                child: const Text('Add To Cart',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    )),
-                                elevation: 5,
-                              )),
+                        Center(
+                          child: InkWell(
+                            onTap: () {
+                              submitorder();
+                            },
+                            child: Container(
+                              width: 200,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.red[200],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Submit",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
+                        SizedBox(
+                          height: 30,
+                        ),
+                        // Padding(
+                        //   padding: const EdgeInsets.all(8.0),
+                        //   child: Align(
+                        //       alignment: Alignment.bottomRight,
+                        //       child: RaisedButton(
+                        //         color: Colors.red,
+                        //         onPressed: () {
+                        //           submitorder();
+                        //         },
+                        //         child: const Text('Add To Cart',
+                        //             style: TextStyle(
+                        //               color: Colors.white,
+                        //             )),
+                        //         elevation: 5,
+                        //       )),
+                        // ),
                       ],
                     ),
                   ),
