@@ -96,6 +96,7 @@ class _HomeState extends State<Home> {
     vendorProvider = Provider.of<VendorProvider>(context);
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text("Creamee"),
         backgroundColor: Colors.red[200],
@@ -262,75 +263,75 @@ class _HomeState extends State<Home> {
         ),
       );
 
-  Widget searchBar() {
-    return FloatingSearchBar(
-      hint: 'Search.....',
-      openAxisAlignment: 0.0,
-      maxWidth: 600,
-      axisAlignment: 0.0,
-      scrollPadding: EdgeInsets.only(top: 16, bottom: 20),
-      elevation: 4.0,
-      physics: BouncingScrollPhysics(),
-      onQueryChanged: (query) {
-        //Your methods will be here
-      },
-      // showDrawerHamburger: false,
-      transitionCurve: Curves.easeInOut,
-      transitionDuration: Duration(milliseconds: 500),
-      transition: CircularFloatingSearchBarTransition(),
-      debounceDelay: Duration(milliseconds: 500),
-      actions: [
-        FloatingSearchBarAction(
-          showIfOpened: false,
-          child: CircularButton(
-            icon: Icon(Icons.place),
-            onPressed: () {
-              print('Places Pressed');
-            },
-          ),
-        ),
-        FloatingSearchBarAction.searchToClear(
-          showIfClosed: false,
-        ),
-      ],
-      builder: (context, transition) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: Material(
-            color: Colors.white,
-            child: Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: vendors.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        splashColor: Colors.yellow,
-                        onTap: () {
-                          vendorProvider.vendorSelected(vendors[index]);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CategoryList(),
-                            ),
-                          );
-                          // print("dfdshfds");
-                        },
-                        child: ListTile(
-                          title: Text(vendors[index].vname),
-                        ),
-                      );
-                    },
-                  )
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // Widget searchBar() {
+  //   return FloatingSearchBar(
+  //     hint: 'Search.....',
+  //     openAxisAlignment: 0.0,
+  //     maxWidth: 600,
+  //     axisAlignment: 0.0,
+  //     scrollPadding: EdgeInsets.only(top: 16, bottom: 20),
+  //     elevation: 4.0,
+  //     physics: BouncingScrollPhysics(),
+  //     onQueryChanged: (query) {
+  //       //Your methods will be here
+  //     },
+  //     // showDrawerHamburger: false,
+  //     transitionCurve: Curves.easeInOut,
+  //     transitionDuration: Duration(milliseconds: 500),
+  //     transition: CircularFloatingSearchBarTransition(),
+  //     debounceDelay: Duration(milliseconds: 500),
+  //     actions: [
+  //       FloatingSearchBarAction(
+  //         showIfOpened: false,
+  //         child: CircularButton(
+  //           icon: Icon(Icons.place),
+  //           onPressed: () {
+  //             print('Places Pressed');
+  //           },
+  //         ),
+  //       ),
+  //       FloatingSearchBarAction.searchToClear(
+  //         showIfClosed: false,
+  //       ),
+  //     ],
+  //     builder: (context, transition) {
+  //       return ClipRRect(
+  //         borderRadius: BorderRadius.circular(8.0),
+  //         child: Material(
+  //           color: Colors.white,
+  //           child: Container(
+  //             color: Colors.white,
+  //             child: Column(
+  //               children: [
+  //                 ListView.builder(
+  //                   scrollDirection: Axis.vertical,
+  //                   shrinkWrap: true,
+  //                   itemCount: vendors.length,
+  //                   itemBuilder: (BuildContext context, int index) {
+  //                     return InkWell(
+  //                       splashColor: Colors.yellow,
+  //                       onTap: () {
+  //                         vendorProvider.vendorSelected(vendors[index]);
+  //                         Navigator.push(
+  //                           context,
+  //                           MaterialPageRoute(
+  //                             builder: (context) => CategoryList(),
+  //                           ),
+  //                         );
+  //                         // print("dfdshfds");
+  //                       },
+  //                       child: ListTile(
+  //                         title: Text(vendors[index].vname),
+  //                       ),
+  //                     );
+  //                   },
+  //                 )
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 }

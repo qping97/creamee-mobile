@@ -1,4 +1,6 @@
+import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/provider/vendorprovider.dart';
+import 'package:creamee/screen/login.dart';
 import 'package:flutter/material.dart';
 import 'package:creamee/screen/home.dart';
 import 'package:creamee/screen/productlist.dart';
@@ -39,6 +41,7 @@ class CategoryList extends StatefulWidget {
 class _CategoryListState extends State<CategoryList> {
   List<Category> categories = [];
   VendorProvider vendorProvider;
+  UserProvider userProvider;
 
   @override
   void initState() {
@@ -72,6 +75,7 @@ class _CategoryListState extends State<CategoryList> {
 
   @override
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -156,10 +160,19 @@ class _CategoryListState extends State<CategoryList> {
               alignment: Alignment.bottomRight,
               child: RaisedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CustomOrder()),
-                  );
+                  if (Provider.of<UserProvider>(context, listen: false).user ==
+                      null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Login(topage: "customorder")),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CustomOrder()),
+                    );
+                  }
                 },
                 child: const Text(
                   'Custom Order',

@@ -1,17 +1,18 @@
 import 'dart:convert';
 
+import 'package:creamee/model/user.dart';
+import 'package:creamee/provider/userprovider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
-import 'package:creamee/screen/account.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as paths;
 
 class EditAccount extends StatefulWidget {
-  final User myaccount;
-  const EditAccount({Key key, this.myaccount}) : super(key: key);
+  const EditAccount({Key key}) : super(key: key);
 
   @override
   _EditAccountState createState() => _EditAccountState();
@@ -28,49 +29,59 @@ class _EditAccountState extends State<EditAccount> {
   TextEditingController _contactno = TextEditingController();
   TextEditingController _address = TextEditingController();
   TextEditingController _password = TextEditingController();
-  User myaccounts = User();
+  User myaccounts;
+  UserProvider userProvider;
 
   @override
   void initState() {
     super.initState();
-    _name.text = widget.myaccount.name;
-    _email.text = widget.myaccount.email;
-    _contactno.text = widget.myaccount.contactno;
-    _address.text = widget.myaccount.address;
+    userProvider = Provider.of<UserProvider>(context, listen: false);
+    myaccounts = userProvider.user;
+    _name.text = userProvider.user.name;
+    _email.text = userProvider.user.email;
+    _contactno.text = userProvider.user.contactno;
+    _address.text = userProvider.user.address;
   }
 
-  saveProfile() async {
+  Future<bool> saveProfile() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var customer = json.decode(localStorage.getString('customer'));
     int customerId = customer['id'];
 
-    var imageFile = await MultipartFile.fromFile(_imageFile.path,
-        filename: "${paths.basename(_imageFile.path)}");
     myaccounts.id = customerId;
     Map<String, dynamic> map = myaccounts.toJson();
-    map["profile_pic"] = imageFile;
+    if (_imageFile != null) {
+      var imageFile = await MultipartFile.fromFile(_imageFile.path,
+          filename: "${paths.basename(_imageFile.path)}");
+      map['profile_pic'] = [imageFile];
+    }
+    if (map['password'] == null) map.remove('password');
     FormData formData = new FormData.fromMap(map);
-    var url = "http://192.168.0.187:8000/api/customer/profile/$customerId/edit";
-    var response = await http.post(url);
+    // var response = await http.post(url);
     print(customerId);
-    print(response.body);
+    // print(response.body);
     print(map);
+    var url = "http://192.168.0.187:8000/api/customer/profile/$customerId/edit";
     try {
       Dio dio = new Dio();
-      dio.options.headers["Accept"] = "application/json";
-      dio.options.headers["Content-Type"] = "application/json";
+      // dio.options.headers["Accept"] = "application/json";
+      // dio.options.headers["Content-Type"] = "application/json";
 
-// TODO: BACKEND
       Response response = await dio.post(url, data: formData);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("Letter's draft saved!");
+        print("edit account success!");
+        print(response.data);
+        userProvider.user = User.fromJson(response.data['customer']);
+        return response.data['success'];
       } else {
-        print("Letter's draft 404");
+        print("edit account 404");
+        return false;
       }
     } catch (e) {
-      print("Letter's draft failed");
+      print("failed");
       print(e.toString());
+      return false;
     }
 
     // if (response.statusCode == 200) {
@@ -163,8 +174,9 @@ class _EditAccountState extends State<EditAccount> {
               // },
               child: Center(
                 child: InkWell(
-                  onTap: () {
-                    saveProfile();
+                  onTap: () async {
+                    bool success = await saveProfile();
+                    if (success) Navigator.pop(context);
                   },
                   child: Container(
                     width: 200,
@@ -201,33 +213,32 @@ class _EditAccountState extends State<EditAccount> {
         CircleAvatar(
           radius: 50.0,
           backgroundImage: _imageFile == null
-              ? AssetImage("assets/profile.png")
+              ? NetworkImage(myaccounts.profilepic.url)
               : FileImage(File(_imageFile.path)),
         ),
-        Positioned(
-          bottom: 1.0,
-          right: 1.0,
-          child: InkWell(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                builder: ((builder) => bottomSheet()),
-              );
-            },
-            child: Container(
-              height: 40,
-              width: 40,
-              child: Icon(
-                Icons.add_a_photo,
-                color: Colors.white,
-                size: 28.0,
-              ),
-              decoration: BoxDecoration(
-                  color: Colors.red[200],
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
-            ),
-          ),
-        ),
+        // Positioned(
+        //   bottom: 1.0,
+        //   right: 1.0,
+        //   child: InkWell(onTap: () {
+        //     //   showModalBottomSheet(
+        //     //     context: context,
+        //     //     builder: ((builder) => bottomSheet()),
+        //     //   );
+        //   }
+        //       // child: Container(
+        //       //   height: 40,
+        //       //   width: 40,
+        //       //   child: Icon(
+        //       //     Icons.add_a_photo,
+        //       //     color: Colors.white,
+        //       //     size: 28.0,
+        //       //   ),
+        //       //   decoration: BoxDecoration(
+        //       //       color: Colors.red[200],
+        //       //       borderRadius: BorderRadius.all(Radius.circular(20))),
+        //       // ),
+        //       ),
+        // ),
       ]),
     );
   }
@@ -286,7 +297,6 @@ class _EditAccountState extends State<EditAccount> {
       controller: _name,
       onChanged: (value) {
         myaccounts.name = value;
-        widget.myaccount.name = myaccounts.name;
       },
       validator: (value) {
         if (value.isEmpty) return "Name can't be empty";
@@ -320,7 +330,6 @@ class _EditAccountState extends State<EditAccount> {
       controller: _email,
       onChanged: (value) {
         myaccounts.email = value;
-        widget.myaccount.email = myaccounts.email;
       },
       validator: (value) {
         if (value.isEmpty) return "Email can't be empty";
@@ -353,7 +362,6 @@ class _EditAccountState extends State<EditAccount> {
       controller: _contactno,
       onChanged: (value) {
         myaccounts.contactno = value;
-        widget.myaccount.contactno = myaccounts.contactno;
       },
       validator: (value) {
         if (value.isEmpty) return "Contact No can't be empty";
@@ -387,7 +395,6 @@ class _EditAccountState extends State<EditAccount> {
       controller: _address,
       onChanged: (value) {
         myaccounts.address = value;
-        widget.myaccount.address = myaccounts.address;
       },
       validator: (value) {
         if (value.isEmpty) return "Address can't be empty";

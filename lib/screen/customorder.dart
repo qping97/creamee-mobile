@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/provider/vendorprovider.dart';
+import 'package:creamee/screen/app.dart';
 import 'package:creamee/screen/categorylist.dart';
 import 'package:creamee/screen/home.dart';
 import 'package:flutter/material.dart';
@@ -137,6 +138,7 @@ class _CustomOrderState extends State<CustomOrder> {
     map['image'] = [imageFile];
     FormData formData = new FormData.fromMap(map);
     print(formData);
+    print(map);
 
     var url = "http://192.168.0.187:8000/api/save-customorder";
     try {
@@ -148,6 +150,7 @@ class _CustomOrderState extends State<CustomOrder> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print("custom order created!");
+        showAlertDialog(context);
         print(response.data);
       } else {
         print("custom order 404");
@@ -156,6 +159,36 @@ class _CustomOrderState extends State<CustomOrder> {
       print("failed");
       print(e.toString());
     }
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => App()),
+        );
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Success", style: TextStyle(color: Colors.green)),
+      content: Text("Custom Order Submitted!"),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 
   fetchCustom() async {
@@ -214,7 +247,7 @@ class _CustomOrderState extends State<CustomOrder> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          'Select Cake Sizes',
+                          'Select Cake Sizes *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -227,7 +260,7 @@ class _CustomOrderState extends State<CustomOrder> {
                           height: 10,
                         ),
                         Text(
-                          'Select Cake Flavor',
+                          'Select Cake Flavor *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -240,7 +273,7 @@ class _CustomOrderState extends State<CustomOrder> {
                           height: 10,
                         ),
                         Text(
-                          'Cake Shape',
+                          'Cake Shape *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -349,7 +382,7 @@ class _CustomOrderState extends State<CustomOrder> {
                           height: 20,
                         ),
                         Text(
-                          'Cake Image',
+                          'Cake Image *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -413,7 +446,7 @@ class _CustomOrderState extends State<CustomOrder> {
                           height: 20,
                         ),
                         Text(
-                          'Cake Description',
+                          'Cake Description *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -448,7 +481,7 @@ class _CustomOrderState extends State<CustomOrder> {
                           height: 10,
                         ),
                         Text(
-                          'Customize Text',
+                          'Customize Text *',
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
@@ -490,8 +523,15 @@ class _CustomOrderState extends State<CustomOrder> {
                         //         : Image.file(File(_imageFile.path)),
                         //   ),
                         // ),
+
+                        Text(
+                          "Reminder: All field are required.",
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
                         SizedBox(
-                          height: 10,
+                          height: 15,
                         ),
                         Center(
                           child: InkWell(
@@ -521,6 +561,7 @@ class _CustomOrderState extends State<CustomOrder> {
                         SizedBox(
                           height: 30,
                         ),
+
                         // Padding(
                         //   padding: const EdgeInsets.all(8.0),
                         //   child: Align(

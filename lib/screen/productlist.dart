@@ -1,6 +1,7 @@
 import 'package:creamee/provider/cartprovider.dart';
 import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/provider/vendorprovider.dart';
+import 'package:creamee/screen/login.dart';
 import 'package:creamee/utils/custom_stepper.dart';
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +58,7 @@ class _ProductListState extends State<ProductList> {
   VendorProvider vendorProvider;
   List<Product> products = [];
   CartProvider cartProvider;
+  UserProvider userProvider;
   @override
   void initState() {
     super.initState();
@@ -152,6 +154,7 @@ class _ProductListState extends State<ProductList> {
 
   Widget build(BuildContext context) {
     cartProvider = Provider.of<CartProvider>(context);
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -214,14 +217,27 @@ class _ProductListState extends State<ProductList> {
                                   ],
                                 ),
                                 Text('RM ' +
-                                    products[index].productprice.toString()),
+                                    products[index]
+                                        .productprice
+                                        .toStringAsFixed(2)),
                                 Align(
                                     alignment: Alignment.bottomRight,
                                     child: RaisedButton(
                                       color: Colors.red,
                                       onPressed: () {
-                                        // cartProvider.addtocart();
-                                        addtoCart(products[index].id);
+                                        if (Provider.of<UserProvider>(context,
+                                                    listen: false)
+                                                .user ==
+                                            null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => Login(
+                                                    topage: "productlist")),
+                                          );
+                                        } else {
+                                          addtoCart(products[index].id);
+                                        }
                                       },
                                       child: const Text('Add To Cart',
                                           style: TextStyle(

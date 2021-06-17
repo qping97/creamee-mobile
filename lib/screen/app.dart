@@ -1,7 +1,10 @@
+import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/screen/account.dart';
 import 'package:creamee/screen/home.dart';
-import 'package:creamee/screen/order.dart';
+import 'package:creamee/screen/login.dart';
+import 'package:creamee/screen/order-list.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class App extends StatefulWidget {
   App({Key key}) : super(key: key);
@@ -12,15 +15,26 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   PageController _pageController = PageController();
+  UserProvider userProvider;
   List<Widget> _screen = [
     Home(),
-    Order(),
+    OrderList(),
     Account(),
   ];
 
   int _selectedIndex = 0;
 
   void _onPageChanged(int index) {
+    if (!userProvider.userloggedin()) {
+      if (index == 1) {
+        _screen[1] = Login(topage: "order-list");
+      } else if (index == 2) {
+        _screen[2] = Login(topage: "account");
+      }
+    } else {
+      _screen[1] = OrderList();
+      _screen[2] = Account();
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -28,8 +42,6 @@ class _AppState extends State<App> {
 
   void _itemTapped(int selectedIndex) {
     _pageController.jumpToPage(selectedIndex);
-
-    if (selectedIndex == 2 || selectedIndex == 1) {}
   }
 
   @override
@@ -51,6 +63,7 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       body: PageView(
         controller: _pageController,

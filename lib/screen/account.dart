@@ -1,3 +1,6 @@
+import 'package:creamee/model/user.dart';
+import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/screen/app.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -6,59 +9,8 @@ import 'package:creamee/screen/editaccount.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:creamee/model/imagecustom.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class User {
-  int id;
-  String name;
-  String contactno;
-  String address;
-  String email;
-  double longitude;
-  double latitude;
-  ImageCustom profilepic;
-  String password;
-  // bool isblock;
-
-  User({
-    this.id,
-    this.name,
-    this.contactno,
-    this.address,
-    this.email,
-    this.longitude,
-    this.latitude,
-    this.profilepic,
-    this.password,
-    // this.isblock,
-  });
-
-  User.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    contactno = json['contact_no'];
-    address = json['address'];
-    email = json['email'];
-    longitude = double.parse(json['longitude']);
-    latitude = double.parse(json['latitude']);
-    profilepic = json['profile_pic'] != null
-        ? new ImageCustom.fromJson(json['profile_pic'])
-        : null;
-    // isblock = json['isblock'] == "0" ? false : true;
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'contact_no': contactno,
-        'address': address,
-        'email': email,
-        'longitude': longitude,
-        'latitude': latitude,
-        'profile_pic': profilepic,
-        'password': password,
-      };
-}
 
 class Account extends StatefulWidget {
   Account({Key key}) : super(key: key);
@@ -69,6 +21,7 @@ class Account extends StatefulWidget {
 class _AccountState extends State<Account> {
   PickedFile _imageFile;
   User accounts;
+  UserProvider userProvider;
   // bool circular = true;
   @override
   void initState() {
@@ -90,6 +43,7 @@ class _AccountState extends State<Account> {
 
       setState(() {
         accounts = User.fromJson(items);
+        Provider.of<UserProvider>(context, listen: false).user = accounts;
         // print(accounts.name);
 
         // isLoading = false;
@@ -106,6 +60,7 @@ class _AccountState extends State<Account> {
   // ProfileModel profileModel = ProfileModel();
   @override
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -119,7 +74,14 @@ class _AccountState extends State<Account> {
               height: 8,
               child: RaisedButton(
                 textColor: Colors.red,
-                onPressed: () {},
+                // onPressed: ()async {
+                onPressed: () {
+                  userProvider.userlogout();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => App()),
+                  );
+                },
                 child: Text("Logout"),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
@@ -157,10 +119,12 @@ class _AccountState extends State<Account> {
                     child: RaisedButton(
                       onPressed: () {
                         Navigator.push(
-                            context,
-                            new MaterialPageRoute(
-                                builder: (context) =>
-                                    EditAccount(myaccount: accounts)));
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => EditAccount()))
+                            .then((value) => setState(() {
+                                  fetchData();
+                                }));
                       },
                       child: const Text('Edit', style: TextStyle(fontSize: 16)),
                       color: Colors.red[200],
@@ -182,11 +146,8 @@ class _AccountState extends State<Account> {
         children: <Widget>[
           Center(
             child: CircleAvatar(
-              radius: 50,
-              backgroundImage: _imageFile == null
-                  ? AssetImage("assets/profile.png")
-                  : NetworkImage(accounts.profilepic.url),
-            ),
+                radius: 50,
+                backgroundImage: NetworkImage(accounts.profilepic.url)),
           ),
           // Text(
           //   "username",

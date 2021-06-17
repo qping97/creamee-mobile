@@ -1,5 +1,10 @@
 import 'dart:convert';
+import 'package:creamee/screen/account.dart';
+import 'package:creamee/screen/app.dart';
 import 'package:creamee/screen/cart.dart';
+import 'package:creamee/screen/order-list.dart';
+import 'package:creamee/screen/productdetail.dart';
+import 'package:creamee/screen/productlist.dart';
 import 'package:flutter/material.dart';
 import 'package:creamee/screen/home.dart';
 import 'package:creamee/screen/register.dart';
@@ -8,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/model/user.dart';
 import 'package:provider/provider.dart';
+import 'package:creamee/screen/customorder.dart';
 
 class Login extends StatefulWidget {
   final String topage;
@@ -196,11 +202,11 @@ class _LoginState extends State<Login> {
       print(val);
 
       User user = User.fromJson(body['customer']);
-      Provider.of<UserProvider>(context, listen: false).userloggedin(user);
-      if (widget.topage == "account") {
+      Provider.of<UserProvider>(context, listen: false).loguserin(user);
+      if (widget.topage == "home") {
         Navigator.push(
           context,
-          new MaterialPageRoute(builder: (context) => Home()),
+          new MaterialPageRoute(builder: (context) => App()),
         );
       } else if (widget.topage == "cart") {
         Navigator.pop(context);
@@ -208,6 +214,32 @@ class _LoginState extends State<Login> {
           context,
           new MaterialPageRoute(builder: (context) => Cart()),
         );
+      } else if (widget.topage == "customorder") {
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          new MaterialPageRoute(builder: (context) => CustomOrder()),
+        );
+      } else if (widget.topage == "order-list") {
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          new MaterialPageRoute(builder: (context) => OrderList()),
+        );
+      } else if (widget.topage == "account") {
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          new MaterialPageRoute(builder: (context) => Account()),
+        );
+      } else if (widget.topage == "productlist") {
+        Navigator.pop(context);
+        // Navigator.push(
+        //   context,
+        //   new MaterialPageRoute(builder: (context) => ProductList()),
+        // );
+      } else if (widget.topage == "productdetail") {
+        Navigator.pop(context);
       }
     } else {
       _showMsg(body['message']);

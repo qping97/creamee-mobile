@@ -9,19 +9,21 @@ class User {
   double longitude;
   double latitude;
   ImageCustom profilepic;
+  String password;
   // bool isblock;
 
-  User({
-    this.id,
-    this.name,
-    this.contactno,
-    this.address,
-    this.email,
-    this.longitude,
-    this.latitude,
-    this.profilepic,
-    // this.isblock,
-  });
+  User(
+      {this.id,
+      this.name,
+      this.contactno,
+      this.address,
+      this.email,
+      this.longitude,
+      this.latitude,
+      this.profilepic,
+      this.password
+      // this.isblock,
+      });
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -43,6 +45,9 @@ class User {
         'contact_no': contactno,
         'address': address,
         'email': email,
+        'longitude': longitude,
+        'latitude': latitude,
         'profile_pic': profilepic,
+        'password': password,
       };
 }

@@ -1,6 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:creamee/model/user.dart';
+import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/screen/account.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 // import 'package:tutorial_app/network_utils/api.dart';
 // import 'package:tutorial_app/screen/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +14,8 @@ import 'package:creamee/screen/home.dart';
 import 'package:creamee/screen/login.dart';
 import 'package:creamee/network_utils/api.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as paths;
+import 'package:http/http.dart' as http;
 
 class Register extends StatefulWidget {
   @override
@@ -19,52 +26,72 @@ class _RegisterState extends State<Register> {
   bool _isLoading = false;
   PickedFile _imageFile;
   final ImagePicker _picker = ImagePicker();
+  User myaccounts = User();
+  UserProvider userProvider;
+  TextEditingController _name = TextEditingController();
+  TextEditingController _email = TextEditingController();
+  TextEditingController _contactno = TextEditingController();
+  TextEditingController _address = TextEditingController();
+  TextEditingController _password = TextEditingController();
 
-  final _formKey = GlobalKey<FormState>();
-  var email;
-  var password;
-  var name;
-  var address;
-  var contactno;
-  var profilepic;
+  // final _formKey = GlobalKey<FormState>();
 
-  void _register() async {
-    setState(() {
-      _isLoading = true;
-    });
-    var data = {
-      'email': email,
-      'password': password,
-      'contact_no': contactno,
-      'name': name,
-      'address': address,
-      'profile_pic': profilepic,
-    };
+  register() async {
+    // setState(() {
+    //   _isLoading = true;
+    // });
 
-    var res = await Network().authData(data, '/api/register/customer');
-    var body = json.decode(res.body);
-    print(res.body);
-    if (body['success']) {
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      localStorage.setString('token', json.encode(body['token']));
-      localStorage.setString('user', json.encode(body));
-      // localStorage.setString('user', json.encode(body['user']));
+    var imageFile = await MultipartFile.fromFile(_imageFile.path,
+        filename: "${paths.basename(_imageFile.path)}");
+    myaccounts.latitude = userProvider.currentposition.latitude;
+    myaccounts.longitude = userProvider.currentposition.longitude;
+    Map<String, dynamic> map = myaccounts.toJson();
+    map['profile_pic'] = [imageFile];
+    FormData formData = new FormData.fromMap(map);
+    print(formData);
+    print(map);
 
-      Navigator.push(
-        context,
-        new MaterialPageRoute(builder: (context) => Login()),
-      );
-    } else {
-      print('false');
+    var url = "http://192.168.0.187:8000/api/register/customer";
+    try {
+      Dio dio = new Dio();
+      Response response = await dio.post(url, data: formData);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("register success!");
+        print(response.data);
+      } else {
+        print("register 404");
+      }
+    } catch (e) {
+      print("failed");
+      print(e.toString());
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
+  // var res = await Network().authData(data, '/api/register/customer');
+  // var body = json.decode(res.body);
+  // print(res.body);
+  // if (body['success']) {
+  //   SharedPreferences localStorage = await SharedPreferences.getInstance();
+  //   localStorage.setString('token', json.encode(body['token']));
+  //   localStorage.setString('user', json.encode(body));
+  //   // localStorage.setString('user', json.encode(body['user']));
+
+  //   Navigator.push(
+  //     context,
+  //     new MaterialPageRoute(builder: (context) => Login()),
+  //   );
+  // } else {
+  //   print('false');
+  // }
+
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
     return Material(
       child: Container(
         color: Colors.red[200],
@@ -85,35 +112,16 @@ class _RegisterState extends State<Register> {
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: Form(
-                          key: _formKey,
+                          // key: _formKey,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               imageProfile(),
                               TextFormField(
-                                style: TextStyle(color: Color(0xFF000000)),
-                                cursorColor: Color(0xFF9b9b9b),
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  prefixIcon: Icon(
-                                    Icons.email,
-                                    color: Colors.grey,
-                                  ),
-                                  hintText: "Email",
-                                  hintStyle: TextStyle(
-                                      color: Color(0xFF9b9b9b),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.normal),
-                                ),
-                                validator: (emailValue) {
-                                  if (emailValue.isEmpty) {
-                                    return 'Please enter email';
-                                  }
-                                  email = emailValue;
-                                  return null;
+                                controller: _name,
+                                onChanged: (value) {
+                                  myaccounts.name = value;
                                 },
-                              ),
-                              TextFormField(
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
                                 keyboardType: TextInputType.text,
@@ -128,15 +136,46 @@ class _RegisterState extends State<Register> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal),
                                 ),
-                                validator: (firstname) {
-                                  if (firstname.isEmpty) {
-                                    return 'Please enter your first name';
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter your name';
                                   }
-                                  name = firstname;
+                                  myaccounts.name = value;
                                   return null;
                                 },
                               ),
                               TextFormField(
+                                controller: _email,
+                                onChanged: (value) {
+                                  myaccounts.email = value;
+                                },
+                                style: TextStyle(color: Color(0xFF000000)),
+                                cursorColor: Color(0xFF9b9b9b),
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  prefixIcon: Icon(
+                                    Icons.email,
+                                    color: Colors.grey,
+                                  ),
+                                  hintText: "Email",
+                                  hintStyle: TextStyle(
+                                      color: Color(0xFF9b9b9b),
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.normal),
+                                ),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter email';
+                                  }
+                                  myaccounts.email = value;
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                controller: _address,
+                                onChanged: (value) {
+                                  myaccounts.address = value;
+                                },
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
                                 keyboardType: TextInputType.text,
@@ -151,15 +190,19 @@ class _RegisterState extends State<Register> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal),
                                 ),
-                                validator: (lastname) {
-                                  if (lastname.isEmpty) {
+                                validator: (value) {
+                                  if (value.isEmpty) {
                                     return 'Please enter your address';
                                   }
-                                  address = lastname;
+                                  myaccounts.address = value;
                                   return null;
                                 },
                               ),
                               TextFormField(
+                                controller: _contactno,
+                                onChanged: (value) {
+                                  myaccounts.contactno = value;
+                                },
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
                                 keyboardType: TextInputType.text,
@@ -174,15 +217,19 @@ class _RegisterState extends State<Register> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal),
                                 ),
-                                validator: (phonenumber) {
-                                  if (phonenumber.isEmpty) {
+                                validator: (value) {
+                                  if (value.isEmpty) {
                                     return 'Please enter contact number';
                                   }
-                                  contactno = phonenumber;
+                                  myaccounts.contactno = value;
                                   return null;
                                 },
                               ),
                               TextFormField(
+                                controller: _password,
+                                onChanged: (value) {
+                                  myaccounts.password = value;
+                                },
                                 style: TextStyle(color: Color(0xFF000000)),
                                 cursorColor: Color(0xFF9b9b9b),
                                 keyboardType: TextInputType.text,
@@ -198,11 +245,11 @@ class _RegisterState extends State<Register> {
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal),
                                 ),
-                                validator: (passwordValue) {
-                                  if (passwordValue.isEmpty) {
-                                    return 'Please enter some text';
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return 'Please enter password';
                                   }
-                                  password = passwordValue;
+                                  myaccounts.password = value;
                                   return null;
                                 },
                               ),
@@ -231,9 +278,10 @@ class _RegisterState extends State<Register> {
                                       borderRadius:
                                           new BorderRadius.circular(20.0)),
                                   onPressed: () {
-                                    if (_formKey.currentState.validate()) {
-                                      _register();
-                                    }
+                                    register();
+                                    // if (_formKey.currentState.validate()) {
+                                    //   _register();
+                                    // }
                                   },
                                 ),
                               ),
@@ -249,7 +297,9 @@ class _RegisterState extends State<Register> {
                           Navigator.push(
                               context,
                               new MaterialPageRoute(
-                                  builder: (context) => Login()));
+                                  builder: (context) => Login(
+                                        topage: "home",
+                                      )));
                         },
                         child: Text(
                           'Already Have an Account',

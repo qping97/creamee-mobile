@@ -9,11 +9,19 @@ class UserProvider extends ChangeNotifier {
   User user;
   Position currentposition;
 
-  userloggedin(User user) {
+  loguserin(User user) {
     this.user = user;
     notifyListeners();
   }
 
+  bool userloggedin() {
+    return user == null ? false : true;
+  }
+
+  userlogout() {
+    user = null;
+    notifyListeners();
+  }
   // Future<bool> login(String email, String password) async {
   //   // setState(() {
   //   //   _isLoading = true;

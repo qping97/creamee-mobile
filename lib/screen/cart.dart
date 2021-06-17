@@ -102,8 +102,11 @@ class _CartState extends State<Cart> {
     });
     print(response.body);
     if (response.statusCode == 200) {
+      Payload payload = Payload.fromJson(json.decode(response.body)['payload']);
+      List<dynamic> items = payload.products;
       setState(() {
-        print(response.body);
+        cartitems = items.map((e) => CartItem.fromJson(e)).toList();
+        subtotal = payload.subTotal;
       });
     } else {
       setState(() {});
@@ -212,16 +215,20 @@ class _CartState extends State<Cart> {
                           ),
                         ],
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => Checkout()),
-                        );
-                      },
+                      disabledColor: Colors.black12,
+                      onPressed: cartitems.length == 0
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Checkout()),
+                              );
+                            },
                       padding: EdgeInsets.all(10),
                       color: Colors.redAccent,
                       shape: StadiumBorder(),
-                    ),
+                    )
                   ],
                 ),
               ),

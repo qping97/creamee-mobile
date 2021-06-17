@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:creamee/provider/userprovider.dart';
+import 'package:creamee/screen/login.dart';
 import 'package:creamee/screen/productlist.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -15,7 +18,9 @@ class ProductDetail extends StatefulWidget {
 }
 
 class _ProductDetailState extends State<ProductDetail> {
-  @override
+  // @override
+  UserProvider userProvider;
+
   addtoCart(productId) async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     var customer = json.decode(localStorage.getString('customer'));
@@ -51,21 +56,11 @@ class _ProductDetailState extends State<ProductDetail> {
         context: dialogContext,
         style: alertStyle,
         title:
-            "Are you sure you want to select this product? It will delete your previous cart.",
+            "Are you sure you want to select this product? You will need to clear the cart to add this product.",
         buttons: [
           DialogButton(
             child: Text(
-              "Cancel",
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            color: Colors.grey,
-          ),
-          DialogButton(
-            child: Text(
-              "Delete",
+              "Ok",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             onPressed: () {
@@ -77,6 +72,7 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   Widget build(BuildContext context) {
+    userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -245,7 +241,19 @@ class _ProductDetailState extends State<ProductDetail> {
                           ),
                           InkWell(
                             onTap: () {
-                              addtoCart(widget.product.id);
+                              if (Provider.of<UserProvider>(context,
+                                          listen: false)
+                                      .user ==
+                                  null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          Login(topage: "productdetail")),
+                                );
+                              } else {
+                                addtoCart(widget.product.id);
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
