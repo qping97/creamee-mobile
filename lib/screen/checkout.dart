@@ -242,7 +242,7 @@ class _CheckoutState extends State<Checkout>
               ),
               ListTile(
                 title: Text(
-                    "Date: ${pickedDate.year}, ${pickedDate.month}，${pickedDate.day}"),
+                    "Pickup Date: ${pickedDate.year}, ${pickedDate.month}，${pickedDate.day}"),
                 trailing: Icon(Icons.keyboard_arrow_down),
                 onTap: _pickedDate,
               ),
@@ -323,6 +323,7 @@ class _CheckoutState extends State<Checkout>
               ),
               order != null
                   ? ListView.builder(
+                      primary: false,
                       shrinkWrap: true,
                       // separatorBuilder: (context, index) =>
                       //     Divider(

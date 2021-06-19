@@ -127,11 +127,11 @@ class _ProductListState extends State<ProductList> {
         context: dialogContext,
         style: alertStyle,
         title:
-            "Are you sure you want to select this product? It will delete your previous cart.",
+            "Are you sure you want to select this product?You will need to clear the cart to add this product.",
         buttons: [
           DialogButton(
             child: Text(
-              "Cancel",
+              "ok",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             onPressed: () {
@@ -139,16 +139,6 @@ class _ProductListState extends State<ProductList> {
             },
             color: Colors.grey,
           ),
-          DialogButton(
-            child: Text(
-              "Delete",
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            color: Colors.grey,
-          )
         ]).show();
   }
 

@@ -152,6 +152,7 @@ class _CustomOrderState extends State<CustomOrder> {
         print("custom order created!");
         showAlertDialog(context);
         print(response.data);
+        // return response.data['success'];
       } else {
         print("custom order 404");
       }
@@ -189,6 +190,7 @@ class _CustomOrderState extends State<CustomOrder> {
         return alert;
       },
     );
+    return true;
   }
 
   fetchCustom() async {
@@ -227,7 +229,7 @@ class _CustomOrderState extends State<CustomOrder> {
     vendorProvider = Provider.of<VendorProvider>(context);
     userProvider = Provider.of<UserProvider>(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         centerTitle: true,
         title: Text("Custom Order"),
@@ -238,6 +240,7 @@ class _CustomOrderState extends State<CustomOrder> {
         builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
           if (snapshot.connectionState == ConnectionState.done || isloaded) {
             return SingleChildScrollView(
+              reverse: true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[

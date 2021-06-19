@@ -56,6 +56,16 @@ class _LoginState extends State<Login> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
+                    Center(
+                      child: CircleAvatar(
+                        radius: 50,
+                        child: Image.asset('assets/logo.png'),
+                      ),
+                    ),
+                    Text("__ping"),
+                    SizedBox(
+                      height: 30,
+                    ),
                     Card(
                       elevation: 4.0,
                       color: Colors.white,

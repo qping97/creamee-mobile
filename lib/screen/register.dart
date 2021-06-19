@@ -57,14 +57,16 @@ class _RegisterState extends State<Register> {
       Response response = await dio.post(url, data: formData);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("register success!");
         print(response.data);
+        return response.data['success'];
       } else {
         print("register 404");
+        return false;
       }
     } catch (e) {
       print("failed");
       print(e.toString());
+      return false;
     }
   }
   // var res = await Network().authData(data, '/api/register/customer');
@@ -277,8 +279,9 @@ class _RegisterState extends State<Register> {
                                   shape: new RoundedRectangleBorder(
                                       borderRadius:
                                           new BorderRadius.circular(20.0)),
-                                  onPressed: () {
-                                    register();
+                                  onPressed: () async {
+                                    bool success = await register();
+                                    if (success) Navigator.pop(context);
                                     // if (_formKey.currentState.validate()) {
                                     //   _register();
                                     // }
