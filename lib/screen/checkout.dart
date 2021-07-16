@@ -56,9 +56,8 @@ class _CheckoutState extends State<Checkout>
     super.initState();
     // WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
     vendorProvider = Provider.of<VendorProvider>(context, listen: false);
+    userProvider = Provider.of<UserProvider>(context, listen: false);
     this.fetchCartItem();
-    // });
-
     _tabController = TabController(length: 2, vsync: this)
       ..addListener(() {
         if (_tabController.index == 0) {
@@ -70,9 +69,10 @@ class _CheckoutState extends State<Checkout>
         }
       });
 
-    // pickedDate = new DateTime.now();
     pickedDate = new DateTime.now();
     time = TimeOfDay.now();
+    // userProvider = Provider.of<UserProvider>(context, listen: false);
+    _homeAddressController.text = userProvider.user.address;
   }
 
   @override
@@ -96,6 +96,7 @@ class _CheckoutState extends State<Checkout>
       await Provider.of<VendorProvider>(context, listen: false)
           .fetchVendor(order.cart[0].product.vendorid);
       setState(() {
+        order.shippingaddress = userProvider.user.address;
         order.deliverymethod = "Home Delivery";
         order.pickupdate = DateTime.now();
       });

@@ -1,3 +1,4 @@
+import 'package:creamee/model/vendor.dart';
 import 'package:creamee/provider/cartprovider.dart';
 import 'package:creamee/provider/userprovider.dart';
 import 'package:creamee/provider/vendorprovider.dart';
@@ -18,6 +19,24 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
+class Pivot {
+  int orderid;
+  int productid;
+  int quantities;
+
+  Pivot({
+    this.orderid,
+    this.productid,
+    this.quantities,
+  });
+
+  Pivot.fromJson(Map<String, dynamic> json) {
+    orderid = json['order_id'];
+    productid = json['product_id'];
+    quantities = json['quantity'];
+  }
+}
+
 class Product {
   int id;
   String name;
@@ -25,6 +44,8 @@ class Product {
   double productprice;
   String description;
   int vendorid;
+  Pivot pivot;
+  Vendor vendor;
 
   Product({
     this.id,
@@ -33,6 +54,8 @@ class Product {
     this.productprice,
     this.description,
     this.vendorid,
+    this.pivot,
+    this.vendor,
   });
 
   Product.fromJson(Map<String, dynamic> json) {
@@ -44,6 +67,9 @@ class Product {
     productprice = double.parse(json['product_price']);
     description = json['description'];
     vendorid = json['vendor_id'];
+    pivot = json['pivot'] != null ? new Pivot.fromJson(json['pivot']) : null;
+    vendor =
+        json['vendor'] != null ? new Vendor.fromJson(json['vendor']) : null;
   }
 }
 

@@ -1,5 +1,6 @@
 import 'package:creamee/model/cartitem.dart';
 import 'package:creamee/model/user.dart';
+import 'package:creamee/screen/productlist.dart';
 
 class Order {
   User customer;
@@ -17,6 +18,7 @@ class Order {
   String ordernotes;
   int customerid;
   int vendorid;
+  List<Product> products;
 
   Order({
     this.customer,
@@ -34,6 +36,7 @@ class Order {
     this.ordernotes,
     this.customerid,
     this.vendorid,
+    this.products,
   });
 
   Order.fromJson(Map<String, dynamic> json) {
@@ -44,6 +47,10 @@ class Order {
       subtotal = double.parse(json['cart']['subTotal']);
       amount = double.parse(json['cart']['total']);
       deliveryfee = double.parse(json['cart']['deliveryFee']);
+    }
+    if (json['product'] != null) {
+      List<dynamic> items = json['product'];
+      products = items.map((e) => Product.fromJson(e)).toList();
     }
     // cart= CartItem.fomJson(json)
     subtotal ??= double.parse(json['subTotal'] ?? '0');
@@ -60,7 +67,7 @@ class Order {
     amount ??= double.parse(json['amount'] ?? '0');
     payment = json['payment'];
     deliverymethod = json['delivery_method'];
-    deliveryfee ??= double.parse(json['deliveryFee'] ?? '0');
+    deliveryfee ??= double.parse(json['delivery_fee'] ?? '0');
     ordernotes = json['order_notes'];
     customerid = json['customer_id'];
     vendorid = json['vendor_id'];
